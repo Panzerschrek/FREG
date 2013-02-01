@@ -1,0 +1,24 @@
+var searchData=
+[
+  ['bell',['BELL',['../header_8h.html#afcdf47c5cf0d9cddfd98749f134ad285a9b1ed7d9244144b7a44adfa64333a630',1,'header.h']]],
+  ['black_5fblack',['BLACK_BLACK',['../screen_8h.html#a92b9b42632766b6a6f2173546ce16072afcd76b34514669761bd5cc5807b47cc7',1,'screen.h']]],
+  ['black_5fblue',['BLACK_BLUE',['../screen_8h.html#a92b9b42632766b6a6f2173546ce16072a7ea9008e5111c16cd317d8daffe21f0a',1,'screen.h']]],
+  ['black_5fcyan',['BLACK_CYAN',['../screen_8h.html#a92b9b42632766b6a6f2173546ce16072a6891812b72fa1cd39e359d7f8539c9b7',1,'screen.h']]],
+  ['black_5fgreen',['BLACK_GREEN',['../screen_8h.html#a92b9b42632766b6a6f2173546ce16072a563bf8b94b8cb623fd9d17a6511cbad2',1,'screen.h']]],
+  ['black_5fmagenta',['BLACK_MAGENTA',['../screen_8h.html#a92b9b42632766b6a6f2173546ce16072ae582c733b432f64138d32ecf8654d710',1,'screen.h']]],
+  ['black_5fred',['BLACK_RED',['../screen_8h.html#a92b9b42632766b6a6f2173546ce16072ad4d53b59914a536f06a87a7a8a694231',1,'screen.h']]],
+  ['black_5fwhite',['BLACK_WHITE',['../screen_8h.html#a92b9b42632766b6a6f2173546ce16072a2879550cb7b282e89baaddb83f921d73',1,'screen.h']]],
+  ['black_5fyellow',['BLACK_YELLOW',['../screen_8h.html#a92b9b42632766b6a6f2173546ce16072a69c6d074dde26482b93bc29242d2044c',1,'screen.h']]],
+  ['block',['BLOCK',['../header_8h.html#afcdf47c5cf0d9cddfd98749f134ad285a02fc27068fe9a3c151ffcc08ec5bb65d',1,'header.h']]],
+  ['blue_5fblack',['BLUE_BLACK',['../screen_8h.html#a92b9b42632766b6a6f2173546ce16072a189a7800234e077b2d997d65da120818',1,'screen.h']]],
+  ['blue_5fblue',['BLUE_BLUE',['../screen_8h.html#a92b9b42632766b6a6f2173546ce16072ac82fafe41e998b9a3d65914817718ff1',1,'screen.h']]],
+  ['blue_5fcyan',['BLUE_CYAN',['../screen_8h.html#a92b9b42632766b6a6f2173546ce16072af4a38c54a73533e43f702530126000cf',1,'screen.h']]],
+  ['blue_5fgreen',['BLUE_GREEN',['../screen_8h.html#a92b9b42632766b6a6f2173546ce16072a7605a0137ca3a2a70b3a35ecc3dbb812',1,'screen.h']]],
+  ['blue_5fmagenta',['BLUE_MAGENTA',['../screen_8h.html#a92b9b42632766b6a6f2173546ce16072a417c99a9ca4cbc41040e1a1ae37b1f7c',1,'screen.h']]],
+  ['blue_5fred',['BLUE_RED',['../screen_8h.html#a92b9b42632766b6a6f2173546ce16072a57e5a66cca9ba1ac1bcfa08135701a99',1,'screen.h']]],
+  ['blue_5fwhite',['BLUE_WHITE',['../screen_8h.html#a92b9b42632766b6a6f2173546ce16072af3e0cc40aaf150a398fea27e4ea9afcf',1,'screen.h']]],
+  ['blue_5fyellow',['BLUE_YELLOW',['../screen_8h.html#a92b9b42632766b6a6f2173546ce16072a74397d6ab3cfc162bd5e676092ae9569',1,'screen.h']]],
+  ['breath',['BREATH',['../header_8h.html#a5adfb93f736d9aa263cea4b7b74da15eac19a68bcd93ab97d42557ecfb59a6cd2',1,'header.h']]],
+  ['build',['BUILD',['../header_8h.html#af806efc6052edbc741683ec893bb2fe1a36ea76657e6cba209d9d0a7148deef05',1,'header.h']]],
+  ['bush',['BUSH',['../header_8h.html#afcdf47c5cf0d9cddfd98749f134ad285ab2e062d1d8146bf8e158300e5930fff4',1,'header.h']]]
+];

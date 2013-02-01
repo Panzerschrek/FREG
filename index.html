@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>FREG by mmaulwurff</title>
+    <title>freg by mmaulwurff</title>
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
@@ -15,7 +15,6 @@
     <link rel="stylesheet" href="stylesheets/ie.css">
     <![endif]-->
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <a href="https://plus.google.com/112719899034359702406" rel="publisher">Find FREG on Google+</a>
 
   </head>
   <body>
@@ -32,7 +31,7 @@
 
       <section>
         <div id="title">
-          <h1>FREG</h1>
+          <h1>freg</h1>
           <p>Game for Linux terminals (and maybe for something else)</p>
           <hr>
           <span class="credits left">Project maintained by <a href="https://github.com/mmaulwurff">mmaulwurff</a></span>
@@ -40,30 +39,32 @@
         </div>
 
         <p>FREG is a free-roaming elementary game.
-Inspired by Minecraft and Angband.</p>
+Inspired by Minecraft and Angband.
+This is a version of FREG with text graphics.</p>
 
 <p>Development stage: implementing basics.</p>
 
-<p>Language: C++
-Non-standard libraries: ncurses, pthreads</p>
+<p>Language: C++, Qt</p>
+
+<p>Non-standard libraries: libncurses5</p>
 
 <p>Compile:
-g++ -lncurses -pthread main.cpp world.cpp blocks.cpp screen.cpp -o FREG.bin</p>
+qmake freg-nox.pro;
+make;</p>
 
-<p>Development is run on GNU/Linux, but on MS Windows should work too with <a href="http://pdcurses.sourceforge.net/">PDCurses</a> and <a href="http://sources.redhat.com/pthreads-win32/">Pthreads-w32</a>.</p>
+<p>(do not forget include -lncurses in Makefile)</p>
 
-<p><a href="freg-nox/html/index.html">Documentation</a></p>
+<p>Or open freg-nox with QtCreator.</p>
+
+<p>Development is run on GNU/Linux, but on MS Windows should work too with <a href="http://pdcurses.sourceforge.net/">PDCurses</a>.</p>
+
+<p><a href="html/index.html">Documentation</a></p>
 
 <p>Now only singleplayer is developed, multiplayer is planned.</p>
 
-<p>Screenshots of early versions are available <a href="https://plus.google.com/photos/100232486142402747012/albums/5669532744165795441?banner=pwa&gpsrc=pwrd1">here</a>.</p>
+<p>Copyright (C) 2013 Alexander Kromm (<a href="mailto:mmaulwurff@gmail.com">mmaulwurff@gmail.com</a>)</p>
 
-<p>Some description is available <a href="http://my.opera.com/mmaulwurff/search/?search=FREG">here</a> [russian].
-Also there is a <a href="https://plus.google.com/112719899034359702406">Google+ page</a>.</p>
-
-<p>Advices are welcome.</p>
-
-<p>Copyright (C) 2011 Alexander Kromm (<a href="mailto:mmaulwurff@gmail.com">mmaulwurff@gmail.com</a>)</p>
+<p>Source code is available at <a href="https://github.com/mmaulwurff/FREG">GitHub</a></p>
 
 <p>FREG is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -106,61 +106,84 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment">        *along with FREG. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span></div>
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment">        */</span></div>
 <div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment">//this file provides base for all screens for freg.</span></div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#ifndef VIRTSCREEN_H</span></div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define VIRTSCREEN_H</span></div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &lt;QObject&gt;</span></div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;</div>
-<div class="line"><a name="l00025"></a><span class="lineno"><a class="code" href="VirtScreen_8h.html#ae53eaf072251ec99a6281be8ca1176cd">   25</a></span>&#160;<span class="keyword">enum</span> <a class="code" href="VirtScreen_8h.html#ae53eaf072251ec99a6281be8ca1176cd">window_views</a> { <a class="code" href="VirtScreen_8h.html#ae53eaf072251ec99a6281be8ca1176cda50d1448013c6f17125caee18aa418af7">NORMAL</a>, <a class="code" href="VirtScreen_8h.html#ae53eaf072251ec99a6281be8ca1176cda76bd5ec6ea9d8a1b582d8d5e43102a02">FRONT</a>, <a class="code" href="VirtScreen_8h.html#ae53eaf072251ec99a6281be8ca1176cdaa6342d4e2db15fb13f0651aa0b9015c4">INVENTORY</a> };</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="keyword">class </span>QString;</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">class </span><a class="code" href="classWorld.html">World</a>;</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">class </span><a class="code" href="classPlayer.html" title="This class contains information specific to player and interface for manipulating him...">Player</a>;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;</div>
-<div class="line"><a name="l00031"></a><span class="lineno"><a class="code" href="classVirtScreen.html">   31</a></span>&#160;<span class="keyword">class </span><a class="code" href="classVirtScreen.html">VirtScreen</a> : <span class="keyword">public</span> QObject {</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;        Q_OBJECT</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;        </div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        <span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00035"></a><span class="lineno"><a class="code" href="classVirtScreen.html#a4370c655ab8fef96399dcf6f2925612f">   35</a></span>&#160;        <a class="code" href="classWorld.html">World</a> * <span class="keyword">const</span> <a class="code" href="classVirtScreen.html#a4370c655ab8fef96399dcf6f2925612f">w</a>;</div>
-<div class="line"><a name="l00036"></a><span class="lineno"><a class="code" href="classVirtScreen.html#aaed763dcb848640a199dcc6af3ac9453">   36</a></span>&#160;        <a class="code" href="classPlayer.html" title="This class contains information specific to player and interface for manipulating him...">Player</a> * <span class="keyword">const</span> <a class="code" href="classVirtScreen.html#aaed763dcb848640a199dcc6af3ac9453">player</a>;</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;        <span class="keyword">public</span> slots:</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a369d79021429f208b741745fc1ea1363">Print</a>()=0;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a55c6e864f5b910c7db43fd71901c1fe2">Notify</a>(<span class="keyword">const</span> QString &amp;)=0;</div>
-<div class="line"><a name="l00041"></a><span class="lineno"><a class="code" href="classVirtScreen.html#a59ed87f87460f7b1bbc9ad20a9922553">   41</a></span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a59ed87f87460f7b1bbc9ad20a9922553">CleanAll</a>() {};</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a3e2309cdf91f62a737cba5d705f12896">PassString</a>(QString &amp;) <span class="keyword">const</span>=0;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#aab19a4173959f46fd01fcfa75bd46f0d">Update</a>(</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;                        <span class="keyword">const</span> ushort,</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;                        <span class="keyword">const</span> ushort,</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;                        <span class="keyword">const</span> ushort)=0;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#abfce24cddd95f4d14b789b00a31437b6">UpdateAll</a>()=0;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a9702c5cede666ff4096f1bf4e3d65ef5">UpdatePlayer</a>()=0;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a77c5f9ca9b6964db87954d1982754f93">UpdateAround</a>(</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;                        <span class="keyword">const</span> ushort,</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;                        <span class="keyword">const</span> ushort,</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;                        <span class="keyword">const</span> ushort,</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;                        <span class="keyword">const</span> ushort range)=0;</div>
-<div class="line"><a name="l00054"></a><span class="lineno"><a class="code" href="classVirtScreen.html#a196a3ddf200b4ad7e7e6270e7427e954">   54</a></span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a196a3ddf200b4ad7e7e6270e7427e954">RePrint</a>() {}</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a280e96470dcc357025bd4104871c3647">ConnectWorld</a>();</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        signals:</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a624df7ec9b4e536b7d74b34b7b03c52e">ExitReceived</a>();</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#aa9824800b6d9f90f25caa535e687649f">InputReceived</a>(<span class="keyword">const</span> <span class="keywordtype">int</span>, <span class="keyword">const</span> <span class="keywordtype">int</span>) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#ifndef VIRTSCREEN_H</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define VIRTSCREEN_H</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &lt;QObject&gt;</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keyword">class </span>QString;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keyword">class </span><a class="code" href="classWorld.html">World</a>;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">class </span><a class="code" href="classPlayer.html" title="This class contains information specific to player and interface for manipulating him...">Player</a>;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;</div>
+<div class="line"><a name="l00034"></a><span class="lineno"><a class="code" href="classVirtScreen.html">   34</a></span>&#160;<span class="keyword">class </span><a class="code" href="classVirtScreen.html" title="This class provides base for all screens for freg. It provides interface for world-screen and player-...">VirtScreen</a> : <span class="keyword">public</span> QObject {</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        Q_OBJECT</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        </div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;        <span class="keyword">enum</span> window_views { NORMAL, FRONT, INVENTORY };</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        <span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00041"></a><span class="lineno"><a class="code" href="classVirtScreen.html#a4370c655ab8fef96399dcf6f2925612f">   41</a></span>&#160;        <a class="code" href="classWorld.html">World</a> * <span class="keyword">const</span> <a class="code" href="classVirtScreen.html#a4370c655ab8fef96399dcf6f2925612f" title="world to print">w</a>;</div>
+<div class="line"><a name="l00043"></a><span class="lineno"><a class="code" href="classVirtScreen.html#aaed763dcb848640a199dcc6af3ac9453">   43</a></span>&#160;        <a class="code" href="classPlayer.html" title="This class contains information specific to player and interface for manipulating him...">Player</a> * <span class="keyword">const</span> <a class="code" href="classVirtScreen.html#aaed763dcb848640a199dcc6af3ac9453" title="player to print (HP, inventory, etc)">player</a>;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        <span class="keyword">private</span> slots:</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> Print()=0;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        <span class="keyword">public</span> slots:</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a55c6e864f5b910c7db43fd71901c1fe2" title="This is called for a notification to be displayed.">Notify</a>(<span class="keyword">const</span> QString &amp;)=0;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
+<div class="line"><a name="l00057"></a><span class="lineno"><a class="code" href="classVirtScreen.html#a59ed87f87460f7b1bbc9ad20a9922553">   57</a></span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a59ed87f87460f7b1bbc9ad20a9922553" title="This is called when program is stopped and from destructor.">CleanAll</a>() {};</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <a class="code" href="classVirtScreen.html#a57051a02af74e0c1b508617c79b4d267">VirtScreen</a>(</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;                        <a class="code" href="classWorld.html">World</a> * <span class="keyword">const</span>,</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;                        <a class="code" href="classPlayer.html" title="This class contains information specific to player and interface for manipulating him...">Player</a> * <span class="keyword">const</span>);</div>
-<div class="line"><a name="l00065"></a><span class="lineno"><a class="code" href="classVirtScreen.html#aa7090b2fb3046525957e9701b7e5ab10">   65</a></span>&#160;        <span class="keyword">virtual</span> <a class="code" href="classVirtScreen.html#aa7090b2fb3046525957e9701b7e5ab10">~VirtScreen</a>() { <a class="code" href="classVirtScreen.html#a59ed87f87460f7b1bbc9ad20a9922553">CleanAll</a>(); }</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;};</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a3e2309cdf91f62a737cba5d705f12896" title="This is called when string is needed to be received from input.">PassString</a>(QString &amp;) <span class="keyword">const</span>=0;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a00fdcd5c68e8229fbfc6a4120e9956f7" title="This is called when block at (x, y, z) should be updated in screen.">Update</a>(</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;                        <span class="keyword">const</span> ushort x,</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;                        <span class="keyword">const</span> ushort y,</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;                        <span class="keyword">const</span> ushort z)=0;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#abfce24cddd95f4d14b789b00a31437b6" title="This is called when all world should be updated in sceen.">UpdateAll</a>()=0;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a8f7fdb0b454623a4729c0b5dd8161b3c" title="This is called when loaded zone of world is moved to update world in screen properly.">Move</a>(<span class="keyword">const</span> <span class="keywordtype">int</span>)=0;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a9702c5cede666ff4096f1bf4e3d65ef5" title="This is called when some player property are needed to be updated in screen.">UpdatePlayer</a>()=0;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        </div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a9f7e017d6e8a328f7aed74e66029ddf2" title="This is called when area around x, y, z with range is needed to be updated in screen.">UpdateAround</a>(</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;                        <span class="keyword">const</span> ushort x,</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;                        <span class="keyword">const</span> ushort y,</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                        <span class="keyword">const</span> ushort z,</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;                        <span class="keyword">const</span> ushort range)=0;</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;</div>
+<div class="line"><a name="l00108"></a><span class="lineno"><a class="code" href="classVirtScreen.html#a196a3ddf200b4ad7e7e6270e7427e954">  108</a></span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a196a3ddf200b4ad7e7e6270e7427e954" title="This is called if screen is needed to be updated.">RePrint</a>() {}</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a280e96470dcc357025bd4104871c3647" title="This is called to restore some connections.">ConnectWorld</a>();</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;        signals:</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a624df7ec9b4e536b7d74b34b7b03c52e" title="This is emitted when input receives exit key.">ExitReceived</a>();</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="classVirtScreen.html#a96c8c824759d2b3d4d9a7bc2bf045cd1" title="This is emitted when input receives action key.">InputReceived</a>(<span class="keyword">const</span> <span class="keywordtype">int</span> action, <span class="keyword">const</span> <span class="keywordtype">int</span> dir) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;        <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;        <a class="code" href="classVirtScreen.html#a57051a02af74e0c1b508617c79b4d267" title="Constructor makes player and world connections.">VirtScreen</a>(</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;                        <a class="code" href="classWorld.html">World</a> * <span class="keyword">const</span>,</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;                        <a class="code" href="classPlayer.html" title="This class contains information specific to player and interface for manipulating him...">Player</a> * <span class="keyword">const</span>);</div>
+<div class="line"><a name="l00147"></a><span class="lineno"><a class="code" href="classVirtScreen.html#a95211d3030daf852e37ca3bf5a552f9f">  147</a></span>&#160;        <a class="code" href="classVirtScreen.html#a95211d3030daf852e37ca3bf5a552f9f" title="Destructor only calls VirtScreen::CleanAll, not needed to be reimplemented.">~VirtScreen</a>() { <a class="code" href="classVirtScreen.html#a59ed87f87460f7b1bbc9ad20a9922553" title="This is called when program is stopped and from destructor.">CleanAll</a>(); }</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;};</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Feb 2 2013 00:48:41 for FREG by &#160;<a href="http://www.doxygen.org/index.html">
+Generated by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.1.2
 </small></address>

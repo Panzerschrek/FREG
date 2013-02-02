@@ -9,6 +9,5 @@ var searchData=
   ['player_2ecpp',['Player.cpp',['../Player_8cpp.html',1,'']]],
   ['player_2eh',['Player.h',['../Player_8h.html',1,'']]],
   ['playerinventory',['PlayerInventory',['../classPlayer.html#a2886eb7787f10a1f1e2f076c6ae9e25c',1,'Player']]],
-  ['print',['Print',['../classVirtScreen.html#a369d79021429f208b741745fc1ea1363',1,'VirtScreen']]],
   ['props',['props',['../header_8h.html#a9d1ec934f8e79ce27d917b16f0404a5d',1,'header.h']]]
 ];

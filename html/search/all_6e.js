@@ -5,7 +5,7 @@ var searchData=
   ['no',['NO',['../header_8h.html#a305c682db7e7cdce78096178c0c9ef4aa0d077f5b932ce05e5b9f30c6087a2f31',1,'header.h']]],
   ['noise',['Noise',['../classBlock.html#a9bd03c3fcef17420c244ca5ae35b9f2b',1,'Block::Noise()'],['../classDwarf.html#a9073e54446d17fca10b71f7bad7d4cbf',1,'Dwarf::Noise()']]],
   ['noon',['NOON',['../header_8h.html#ac436fd4b0170b47e8e2d8b63e556a9c9abc28dc521bb6e7efe87f471faf76cd0a',1,'header.h']]],
-  ['normal',['Normal',['../classBlock.html#a6f5add0adf5749ca2b1da2f149d741ef',1,'Block::Normal()'],['../VirtScreen_8h.html#ae53eaf072251ec99a6281be8ca1176cda50d1448013c6f17125caee18aa418af7',1,'NORMAL():&#160;VirtScreen.h']]],
+  ['normal',['Normal',['../classBlock.html#a6f5add0adf5749ca2b1da2f149d741ef',1,'Block']]],
   ['north',['NORTH',['../header_8h.html#aeac25a28aa4d3c6009f7249ee82ae12dad0611de6f28d4a9c9eac959f5344698e',1,'header.h']]],
   ['north_5feast',['NORTH_EAST',['../header_8h.html#aeac25a28aa4d3c6009f7249ee82ae12dad6a6889fa230e3d0f72495725f8d0308',1,'header.h']]],
   ['north_5fwest',['NORTH_WEST',['../header_8h.html#aeac25a28aa4d3c6009f7249ee82ae12dab75c2136aaf25d9ed387c66e251582c5',1,'header.h']]],

@@ -24,9 +24,8 @@
 #endif
 
 #include <QString>
-#include <QFile>
-#include <QTextStream>
-#include "header.h"
+#include <QSettings>
+#include <QDir>
 #include "world.h"
 #include "Player.h"
 
@@ -36,24 +35,22 @@ int main(int argc, char *argv[]) {
 	#else
 		QApplication freg(argc, argv);
 	#endif
-	QString worldName, temp;
-	ushort size;
-	ushort sizeActive;
-	QFile file("options.txt");
-	if ( !file.open(QIODevice::ReadOnly | QIODevice::Text) ) {
-		worldName="The_Land_Of_Doubts";
-		size=3;
-		sizeActive=3;
-	} else {
-		QTextStream in(&file);
-		in >> temp >> worldName
-			>> temp >> size
-			>> temp >> sizeActive;
-	}
+	QCoreApplication::setOrganizationName("freg-team");
+	QCoreApplication::setApplicationName("freg");
+	QSettings::setDefaultFormat(QSettings::IniFormat);
 
-	World earth(worldName, size, sizeActive);
+	QSettings sett(QDir::currentPath()+"/freg.ini",
+		QSettings::IniFormat);
+	const QString worldName=sett.value("current_world", "mu").toString();
+	sett.setValue("current_world", worldName);
+
+	World earth(worldName);
 	Player player(&earth);
 	Screen screen(&earth, &player);
+	earth.start();
+
+	QObject::connect(&player, SIGNAL(Destroyed()),
+		&screen, SLOT(DeathScreen()));
 
 	QObject::connect(&freg, SIGNAL(aboutToQuit()),
 		&screen, SLOT(CleanAll()));
@@ -63,6 +60,8 @@ int main(int argc, char *argv[]) {
 		&earth, SLOT(CleanAll()));
 
 	QObject::connect(&screen, SIGNAL(ExitReceived()),
+		&freg, SLOT(quit()));
+	QObject::connect(&earth, SIGNAL(ExitReceived()),
 		&freg, SLOT(quit()));
 
 	return freg.exec();

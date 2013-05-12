@@ -1,6 +1,0 @@
-#World:
-The_Land_Of_Doubts
-#Loaded_zone_size:
-3
-#Active_zone_size:
-3

@@ -15,35 +15,37 @@
 	*along with FREG. If not, see <http://www.gnu.org/licenses/>.
 	*/
 
-/** \class IThread i_thread.h
- * \brief Keyboard input thread for curses screen for freg.
- *
- * This class is thread, with IThread::run containing input loop.
- */
+#ifndef CRAFTMANAGER_H
+#define CRAFTMANAGER_H
 
-#ifndef THREAD_H
-#define THREAD_H
+#include <QList>
 
-#include <QThread>
-#include "header.h"
+typedef struct {
+	ushort num;
+	int kind;
+	int sub;
+} craft_item;
+typedef QList<craft_item *> craft_recipe;
 
-class IThread : public QThread {
-	Q_OBJECT
-	
+class CraftManager {
 	public:
-		IThread();
-		void Stop();
 
-	protected:
-		void run();
+	bool MiniCraft(
+			craft_item & item,
+			craft_item & result)
+		const;
+	bool Craft(
+			const craft_recipe & recipe,
+			craft_item & result)
+		const;
 	
-	signals:
-		void InputReceived(int, int);
-		void ExitReceived();
-		void RePrintReceived() const;
+	CraftManager();
+	~CraftManager();
 
 	private:
-		volatile bool stopped;
-};
+	QList<craft_recipe *> recipes;
+}; //class CraftManager
+
+extern CraftManager craft_manager;
 
 #endif

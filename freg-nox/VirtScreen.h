@@ -56,25 +56,23 @@ class VirtScreen : public QObject {
 
 	///This is called when program is stopped and from destructor.
 	/**
-	 * When implemented, this should contain check to prevent double cleaning.
+	 * When implemented, this should contain check to prevent
+	 * double cleaning.
 	 */
-	virtual void CleanAll() {};
+	virtual void CleanAll();
 
 	///This is called when string is needed to be received from input.
 	/**
 	 * It is connected to world in constructor.
 	 */
-	virtual void PassString(QString &) const=0;
+	virtual QString & PassString(QString &) const=0;
 
 	///This is called when block at (x, y, z) should be updated in screen.
 	/**
 	 * When implemented, this should work fast.
 	 * It is connected to world in constructor.
 	 */
-	virtual void Update(
-			const ushort x,
-			const ushort y,
-			const ushort z)=0;
+	virtual void Update(ushort x, ushort y, ushort z)=0;
 
 	///This is called when all world should be updated in sceen.
 	/**
@@ -83,33 +81,28 @@ class VirtScreen : public QObject {
 	 */
 	virtual void UpdateAll()=0;
 
-	///This is called when loaded zone of world is moved to update world in screen properly.
+	///Called when world loaded zone is moved to update world in screen.
 	/**
 	 * When implemented, this should work fast.
 	 * It is connected to world in constructor.
 	 */
-	virtual void Move(const int)=0;
+	virtual void Move(int)=0;
 
-	///This is called when some player property are needed to be updated in screen.
+	///Called when some player property needs to be updated in screen.
 	/**
 	 * When implemented, this should work fast.
 	 * It is connected to world in constructor.
 	 */
 	virtual void UpdatePlayer()=0;
 	
-	///This is called when area around x, y, z with range is needed to be updated in screen.
+	///Called when area around xyz with range needs to be updated.
 	/**
 	 * When implemented, this should work fast.
 	 * It is connected to world in constructor.
 	 */
 	virtual void UpdateAround(
-			const ushort x,
-			const ushort y,
-			const ushort z,
-			const ushort range)=0;
-
-	///This is called if screen is needed to be updated.
-	virtual void RePrint() {}
+			ushort x, ushort y, ushort z,
+			ushort range)=0;
 
 	///This is called to restore some connections.
 	/**
@@ -124,7 +117,9 @@ class VirtScreen : public QObject {
 	 * This is called from world when pack of world changing is ended.
 	 * ( Can be used in screen optimization. )
 	 */
-	virtual void UpdatesEnd() {}
+	virtual void UpdatesEnd();
+
+	void DeathScreen();
 
 	signals:
 	///This is emitted when input receives exit key.
@@ -132,15 +127,6 @@ class VirtScreen : public QObject {
 	 * This is connected to application exit.
 	 */
 	void ExitReceived();
-
-	///This is emitted when input receives action key.
-	/**
-	 * Should be connected to player in constructor by this code:
-	 * connect(this, SIGNAL(InputReceived(int, int)),
-	 * 	player, SLOT(Act(int, int)),
-	 * 	Qt::DirectConnection);
-	 */
-	void InputReceived(const int action, const int dir) const;
 
 	public:
 	///Constructor makes player and world connections.
@@ -151,11 +137,9 @@ class VirtScreen : public QObject {
 	 * 	player, SLOT(Act(int, int)),
 	 * 	Qt::DirectConnection);
 	 */
-	VirtScreen(
-			World * const,
-		       	Player * const);
-	///Destructor only calls VirtScreen::CleanAll, not needed to be reimplemented.
-	~VirtScreen() { CleanAll(); }
-};
+	VirtScreen(World *, Player *);
+	///Only calls VirtScreen::CleanAll, not needed to be reimplemented.
+	virtual ~VirtScreen();
+}; //class VirtScreen
 
 #endif

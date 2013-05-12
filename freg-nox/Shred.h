@@ -19,123 +19,110 @@
 #define SHRED_H
 
 #include <QList>
-#include <QString>
-#include <QDataStream>
-#include "header.h"
 #include "blocks.h"
 
+class QFile;
 class World;
 
-class Shred {
-	Block * blocks[shred_width][shred_width][height];
-	uchar lightMap[shred_width][shred_width][height];
-	World * const world;
-	const ulong longitude, latitude;
+const char DEFAULT_SHRED='.';
+const char OUT_BORDER_SHRED='~';
 
+class Shred {
+	Block * blocks[SHRED_WIDTH][SHRED_WIDTH][HEIGHT];
+	uchar lightMap[SHRED_WIDTH][SHRED_WIDTH][HEIGHT];
+	World * const world;
+	const long longitude, latitude;
 	ushort shredX, shredY;
-	QList<Active *> activeList;
+
+	QList<Active *> activeListAll;
+	QList<Active *> activeListFrequent;
+	QList<Active *> activeListRare;
+	QList<Active *> fallList;
 
 	public:
-	ulong Longitude() const { return longitude; }
-	ulong Latitude()  const { return latitude; }
-	ushort ShredX() const { return shredX; }
-	ushort ShredY() const { return shredY; }
-	void PhysEvents();
+	long Longitude() const;
+	long Latitude()  const;
+	ushort ShredX() const;
+	ushort ShredY() const;
+	void PhysEventsFrequent();
+	void PhysEventsRare();
 
-	void AddActive(Active * const);
-	void RemActive(Active * const);
+	void AddActive(Active *);
+	void RemActive(Active *);
+	void AddFalling(Active *);
+	void RemFalling(Active *);
+	void AddFalling(ushort x, ushort y, ushort z);
 
-	World * GetWorld() const { return world; }
+	World * GetWorld() const;
 
 	void ReloadToNorth();
 	void ReloadToEast();
 	void ReloadToSouth();
 	void ReloadToWest();
 
-	Block * GetBlock(
-			const ushort,
-			const ushort,
-			const ushort) const;
-	void SetBlock(Block *,
-			const ushort,
-			const ushort,
-			const ushort);
+	Block * GetBlock(ushort x, ushort y, ushort z) const;
+	///Puts block to coordinates xyz and activates it
+	void SetBlock(Block * block, ushort x, ushort y, ushort z);
+	///Puts block to coordinates, not activates it (e.g. in World::Move)
+	void PutBlock(Block * block, ushort x, ushort y, ushort z);
+	///Puts normal block to coordinates
+	void PutNormalBlock(int sub, ushort x, ushort y, ushort z, int dir=UP);
+	static Block * Normal(int sub, int dir=UP);
 
-	uchar LightMap(
-			const ushort,
-			const ushort,
-			const ushort) const;
-	bool SetLightMap(
-			const uchar level,
-			const ushort,
-			const ushort,
-			const ushort);
-	void SetAllLightMap(const uchar=0);
+	uchar LightMap(ushort x, ushort y, ushort z) const;
+	bool SetLightMap(uchar level, ushort x, ushort y, ushort z);
+	void SetAllLightMap(uchar level);
 	void ShineAll();
 
-	int Sub(
-			const ushort,
-			const ushort,
-			const ushort) const;
-	int Kind(
-			const ushort,
-			const ushort,
-			const ushort) const;
-	int Durability(
-			const ushort,
-			const ushort,
-			const ushort) const;
-	int Movable(
-			const ushort,
-			const ushort,
-			const ushort) const;
-	int Transparent(
-			const ushort,
-			const ushort,
-			const ushort) const;
-	float Weight(
-			const ushort,
-			const ushort,
-			const ushort) const;
-	uchar LightRadius(
-			const ushort,
-			const ushort,
-			const ushort) const;
+	int Sub(ushort x, ushort y, ushort z) const;
+	int Kind(ushort x, ushort y, ushort z) const;
+	int Durability(ushort x, ushort y, ushort z) const;
+	int Movable(ushort x, ushort y, ushort z) const;
+	int Transparent(ushort x, ushort y, ushort z) const;
+	ushort Weight(ushort x, ushort y, ushort z) const;
+	uchar LightRadius(ushort x, ushort y, ushort z) const;
 
+	int LoadShred(QFile &);
 
-	Shred(World * const,
-			const ushort,
-			const ushort,
-			const ulong,
-			const ulong);
+	Shred(World *,
+			ushort shred_x, ushort shred_y,
+			long longi, long lati);
 	~Shred();
 
-	Block * NewNormal(const int sub) const;
-	Block * BlockFromFile(QDataStream &,
-			ushort,
-			ushort,
-			const ushort);
+	void SetNewBlock(int kind, int sub, ushort x, ushort y, ushort z);
+	private:
+	void RegisterBlock(Block *, ushort x, ushort y, ushort z);
 
 	private:
 	QString FileName() const;
-	char TypeOfShred(
-			const ulong,
-			const ulong) const;
+	char TypeOfShred(long longi, long lati) const;
 
-	void NormalUnderground(const ushort);
+	void NormalUnderground(ushort depth=0, int sub=SOIL);
+	void CoverWith(int kind, int sub, ushort thickness);
+
 	void PlantGrass();
 	void TestShred();
 	void NullMountain();
 	void Plain();
-	void Forest(const long, const long);
-	void Water( const long, const long);
-	void Hill(  const long, const long);
+	void Forest(long, long);
+	void Water( long, long);
+	void Pyramid();
+	void Mountain();
+	void Desert();
 	//block combinations section (trees, buildings, etc):
-	bool Tree(
-			const ushort x,
-			const ushort y,
-			const ushort z,
-			const ushort height);
-};
+	bool Tree(ushort x, ushort y, ushort z, ushort height);
 
+	//land generation
+	private:
+	void ShredLandAmplitudeAndLevel(
+			long longi, long lati,
+			ushort* l,
+			float* a) const;
+	void ShredNominalAmplitudeAndLevel(
+			char shred_type,
+			ushort* l,
+			float* a) const;
+	void AddWater();
+	ushort FlatUndeground(short depth=0);
+};//class Shred
 #endif

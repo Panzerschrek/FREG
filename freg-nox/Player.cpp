@@ -15,113 +15,76 @@
 	*along with FREG. If not, see <http://www.gnu.org/licenses/>.
 	*/
 
-#include <blocks.h>
-#include <Player.h>
-#include <world.h>
-#include <Shred.h>
 #include <QFile>
 #include <QTextStream>
 #include <QString>
+#include <QSettings>
+#include <QString>
+#include <QDir>
+#include "blocks.h"
+#include "Player.h"
+#include "world.h"
+#include "Shred.h"
+#include "BlockManager.h"
+
+ushort Player::X() const { return x; }
+ushort Player::Y() const { return y; }
+ushort Player::Z() const { return z; }
+
+Shred * Player::GetShred() const { return world->GetShred(x, y); }
+
+bool Player::GetCreativeMode() const { return creativeMode; }
+void Player::SetCreativeMode(const bool turn) {
+	creativeMode=turn;
+	if ( turn ) {
+		disconnect(player, 0, 0, 0);
+		player=block_manager.NewBlock(PILE, DIFFERENT)->ActiveBlock();
+	} else {
+		Pile * const creative_inv=(Pile *)player;
+		const int last_dir=dir;
+		SetPlayer(x, y, z);
+		Dir(last_dir);
+		Inventory * const inv=PlayerInventory();
+		if ( inv ) {
+			inv->GetAll(creative_inv);
+		}
+		block_manager.DeleteBlock(creative_inv);
+	}
+}
+
+int Player::UsingSelfType() const { return usingSelfType; }
+int Player::UsingType() const { return usingType; }
+
+Active * Player::GetP() const { return player; }
 
 short Player::HP() const {
-	return player ? player->Durability() : 0;
+	return ( !player || creativeMode ) ?
+		-1 :
+		player ? player->Durability() : 0;
 }
 
 short Player::Breath() const {
-	if ( !player )
+	if ( !player || creativeMode ) {
 		return -1;
+	}
 	Animal const * const animal=player->IsAnimal();
-	return animal ? animal->Breath() : -1;
+	return ( animal ? animal->Breath() : -1 );
 }
 
 short Player::Satiation() const {
-	if ( !player )
+	if ( !player || creativeMode ) {
 		return -1;
+	}
 	Animal const * const animal=player->IsAnimal();
-	return animal ? animal->Satiation() : -1;
+	return ( animal ? animal->Satiation() : -1 );
 }
 
 Inventory * Player::PlayerInventory() {
-	return player ? player->HasInventory() : 0;
+	return ( player ? player->HasInventory() : 0 );
 }
 
-void Player::Act(const int action, const int d) {
-	const int dir=d;
-	//TODO: put writelock only where needed
-	switch ( (actions)action ) {
-		case MOVE:
-			world->WriteLock();
-			Move(dir);
-			world->Unlock();
-		break;
-		case TURN_RIGHT:
-			world->WriteLock();
-			Dir( world->TurnRight(Dir()) );
-			emit Updated();
-			world->Unlock();
-		break;
-		case TURN_LEFT: 
-			world->WriteLock();
-			Dir( world->TurnLeft(Dir()) );
-			emit Updated();
-			world->Unlock();
-		break;
-		case JUMP:
-			world->WriteLock();
-			Jump();
-			world->Unlock();
-		break;
-		case TURN:
-			world->WriteLock();
-			Dir(dir);
-			emit Updated();
-			world->Unlock();
-		break;
-		case OPEN_INVENTORY:
-			if ( player->HasInventory() ) {
-				usingSelfType=( OPEN==usingSelfType ) ? NO : OPEN;
-				emit Updated();
-			}
-		break;
-		//TODO 
-		case USE: {
-			ushort i, j, k;
-			world->WriteLock();
-			Focus(i, j, k);
-			usingType=world->Use(i, j, k);
-			world->Unlock();
-		} break;
-		case EXAMINE:
-			world->ReadLock();
-			Examine();
-			world->Unlock();
-		break;
-		case DROP: /*Drop();*/ break;
-		case GET: /*Get();*/ break;
-		case WIELD:
-			world->WriteLock();
-			Wield();
-			world->Unlock();
-		break;
-		case EAT: /*Eat();*/ break;
-		case INSCRIBE:
-			world->WriteLock();
-			Inscribe();
-			world->Unlock();
-		break;
-		case DAMAGE: {
-			ushort i, j, k;
-			world->WriteLock();
-			Focus(i, j, k);
-			world->Damage(i, j, k);
-			world->Unlock();
-		} break;
-		case BUILD: /*Build();*/ break;
-		default:
-			fprintf(stderr, "Player::Act: unlisted action: %d\n",
-				(int)action);
-	}
-}
+long Player::GetLongitude() const { return GetShred()->Longitude(); }
+long Player::GetLatitude()  const { return GetShred()->Latitude();  }
 
 void Player::UpdateXYZ() {
 	if ( player ) {
@@ -131,77 +94,435 @@ void Player::UpdateXYZ() {
 	}
 }
 
-void Player::Focus(
-		ushort & i_target,
-		ushort & j_target,
-		ushort & k_target) const
-{
-	if ( player )
-	world->Focus(x, y, z,
-		i_target, j_target, k_target,
-		player->GetDir());
-	else {
-		i_target=x;
-		j_target=y;
-		k_target=z;
-	}
+void Player::Focus(ushort & i_target, ushort & j_target, ushort & k_target)
+const {
+	world->Focus(x, y, z, i_target, j_target, k_target, Dir());
 }
 
-void Player::Examine() const {
-	ushort i, j, k;
-	Focus(i, j, k);
-	
+void Player::Examine(const short i, const short j, const short k)
+const {
+	world->ReadLock();
+
+	emit Notify("------");
 	QString str;
 	emit Notify( world->FullName(str, i, j, k) );
-	
+	if ( creativeMode ) { //know more
+		emit Notify(QString(tr(
+		"Light:%1, fire:%2, sun:%3. Transp:%4. Norm:%5. Dir:%6.")).
+			arg(world->Enlightened(i, j, k)).
+			arg(world->FireLight(i, j, k)/16).
+			arg(world->SunLight(i, j, k)).
+			arg(world->Transparent(i, j, k)).
+			arg(world->GetBlock(i, j, k)==block_manager.
+				NormalBlock(world->Sub(i, j, k))).
+			arg(world->GetBlock(i, j, k)->GetDir()));
+	}
+	const int sub=world->Sub(i, j, k);
+	if ( AIR==sub || SKY==sub || SUN_MOON==sub ) {
+		world->Unlock();
+		return;	
+	}
 	if ( ""!=world->GetNote(str, i, j, k) )
-		emit Notify("Inscription: "+str);
-
-	str="Temperature: "+QString::number(world->Temperature(i, j, k));
-	emit Notify(str);
-
-	str="Durability: "+QString::number(world->Durability(i, j, k));
-	emit Notify(str);
-
-	str="Weight: "+QString::number(world->Weight(i, j, k));
-	emit Notify(str);
+		emit Notify(tr("Inscription: ")+str);
+	emit Notify(tr("Temperature: ")+
+		QString::number(world->Temperature(i, j, k)));
+	emit Notify(tr("Durability: ")+
+		QString::number(world->Durability(i, j, k)));
+	emit Notify(tr("Weight: ")+
+		QString::number(world->Weight(i, j, k)));
+	world->Unlock();
 }
 
 void Player::Jump() {
-	world->Jump(x, y, z);
+	if ( !creativeMode ) {
+		usingType=NO;
+		world->SetDeferredAction(x, y, z, dir, DEFERRED_JUMP);
+	} else {
+		if ( UP==dir && z<HEIGHT-2 ) {
+			++z;
+		} else if ( z>1 ) {
+			--z;
+		}
+	}
 }
 
-int Player::Move(const int dir) {
+void Player::Move(const int dir) {
+	if ( !creativeMode && player ) {
+		usingType=NO;
+		world->SetDeferredAction(x, y, z, dir, DEFERRED_MOVE);
+	} else {
+		switch ( dir ) {
+			case NORTH:
+				if (y>=(world->NumShreds()/2-1)*SHRED_WIDTH+1 )
+				{
+					--y;
+				}
+			break;
+			case SOUTH:
+				if (y<(world->NumShreds()/2+2)*SHRED_WIDTH-1)
+				{
+					++y;
+				}
+			break;
+			case EAST:
+				if (x<(world->NumShreds()/2+2)*SHRED_WIDTH-1)
+				{
+					++x;
+				}
+			break;
+			case WEST:
+				if (x>=(world->NumShreds()/2-1)*SHRED_WIDTH+1)
+				{
+					--x;
+				}
+			break;
+			case UP:
+				if ( z<HEIGHT-2 ) {
+					++z;
+				}
+			break;
+			case DOWN:
+				if ( z>1 ) {
+					--z;
+				}
+			break;
+			default:
+				fprintf(stderr,
+					"Player::Move: unlisted dir: %d",
+					dir);
+		}
+		emit Updated();
+	}
+}
+
+void Player::Turn(const int dir) {
+	world->WriteLock();
 	usingType=NO;
-	return world->Move(x, y, z, dir);
+	Dir(( (DOWN==Dir() && UP!=dir) ||
+			(UP==Dir() && DOWN!=dir) ) ?
+		NORTH :
+		dir);
+	emit Updated();
+	world->Unlock();
 }
 
-void Player::Inscribe() { world->Inscribe(x, y, z); }
+void Player::Backpack() {
+	if ( player && player->HasInventory() ) {
+		usingSelfType=( OPEN==usingSelfType ) ? NO : OPEN;
+		emit Updated();
+	}
+}
 
-Block * Player::Drop(const ushort n) {
-	if ( !player )
+void Player::Use(const short x, const short y, const short z) {
+	world->WriteLock();
+	const int us_type=world->Use(x, y, z);
+	usingType=( us_type==usingType ) ? NO : us_type;
+	world->Unlock();
+}
+
+void Player::Inscribe(const short x, const short y, const short z) const {
+	world->WriteLock();
+	if ( player ) {
+		world->Inscribe(x, y, z);
+	} else {
+		emit Notify(tr("No player."));
+	}
+	world->Unlock();
+}
+
+Block * Player::ValidBlock(const ushort num) const {
+	if ( !player ) {
+		emit Notify("Player does not exist.");
 		return 0;
-
-	Inventory * inv=player->HasInventory();
-	return inv ?
-		inv->Drop(n) :
-		NULL;
+	}
+	Inventory * const inv=player->HasInventory();
+	if ( !inv ) {
+		emit Notify("Player has no inventory.");
+		return 0;
+	}
+	if ( num>=inv->Size() ) {
+		emit Notify("No such place.");
+		return 0;
+	}
+	Block * const block=inv->ShowBlock(num);
+	if ( !block ) {
+		emit Notify("Nothing here.");
+		return 0;
+	}
+	return block;
 }
 
-void Player::Get(Block * block) {
-	if ( !player )
-		return;
-
-	Inventory * inv=player->HasInventory();
-	if ( inv )
-		inv->Get(block);
+void Player::Use(const ushort num) {
+	world->WriteLock();
+	Block * const block=ValidBlock(num);
+	if ( block ) {
+		block->Use();
+	}
+	world->Unlock();
 }
 
-bool Player::Visible(
-		const ushort x_to,
-		const ushort y_to,
-		const ushort z_to) const
+void Player::Throw(const ushort num) {
+	world->WriteLock();
+	Block * const block=ValidBlock(num);
+	world->Unlock();
+	if ( block ) {
+		world->SetDeferredAction(
+			0, 0, 0,
+			UP, //doesn't matter here
+			DEFERRED_THROW,
+			x, y, z,
+			0, //what, doesn't matter here
+			0, //who
+			num);
+	}
+}
+
+void Player::Obtain(const ushort num) {
+	world->WriteLock();
+	bool update_flag=false;
+	const int err=world->Get(x, y, z, num);
+	ushort x_from, y_from, z_from;
+	Focus(x_from, y_from, z_from);
+	Inventory * const inv=world->
+		GetBlock(x_from, y_from, z_from)->HasInventory();
+	world->Unlock();
+	if ( !inv || inv->IsEmpty() ) {
+		update_flag=true;
+		usingType=NO;
+	}
+	if ( 5==err || 3==err || 6==err ) {
+		emit Notify("Nothing here.");
+	} else if ( 4==err || 2==err ) {
+		emit Notify("No room.");
+	} else {
+		update_flag=true;
+	}
+	if ( update_flag ) {
+		emit Updated();
+	}
+}
+
+bool Player::Wield(const ushort num) {
+	world->WriteLock();
+	if ( ValidBlock(num) ) {
+		for (ushort i=0; i<=Dwarf::onLegs; ++i ) {
+			if ( InnerMove(num, i) ) {
+				world->Unlock();
+				emit Notify(tr("Wielded."));
+				return true;
+			}
+		}
+	}
+	emit Notify(tr("You cannot wield this."));
+	world->Unlock();
+	return false;
+}
+
+bool Player::MoveInsideInventory(const ushort num_from, const ushort num_to) {
+	world->WriteLock();
+	if ( ValidBlock(num_from) && InnerMove(num_from, num_to) ) {
+		world->Unlock();
+		return true;
+	}
+	world->Unlock();
+	return false;
+}
+
+bool Player::InnerMove(const ushort num_from, const ushort num_to) {
+	Inventory * const inv=PlayerInventory();
+	if ( !inv ) {
+		return false;
+	}
+	return ( inv->MoveInside(num_from, num_to) );
+}
+
+void Player::Inscribe(const ushort num) {
+	world->WriteLock();
+	if ( ValidBlock(num) ) {
+		QString str;
+		emit GetString(str);
+		Inventory * const inv=PlayerInventory();
+		const int err=inv->InscribeInv(num, str);
+		if ( 1==err ) {
+			emit Notify("Cannot inscribe this.");
+		} else {
+			emit Notify("Inscribed.");
+		}
+	}
+	world->Unlock();
+}
+
+void Player::Eat(const ushort num) {
+	world->WriteLock();
+	Block * const food=ValidBlock(num);
+	if ( food ) {
+		Animal * const pl=player->IsAnimal();
+		if ( pl ) {
+			const int eat=pl->Eat(food);
+			if ( 2==eat ) {
+				emit Notify("You can't eat this.");
+			} else {
+				emit Notify(
+					(SECONDS_IN_DAY < pl->Satiation() ) ?
+					"You have gorged yourself!" : "Yum!");
+				PlayerInventory()->Pull(num);
+				block_manager.DeleteBlock(food);
+				emit Updated();
+			}
+		} else {
+			emit Notify("You can't eat.");
+		}
+	}
+	world->Unlock();
+}
+
+void Player::Build(
+		const short x_target,
+		const short y_target,
+		const short z_target,
+		const ushort num)
 {
+	world->WriteLock();
+	Block * const block=ValidBlock(num);
+	world->Unlock();
+	if ( block && (AIR!=world->Sub(x, y, z-1) || 0==player->Weight()) ) {
+		world->SetDeferredAction(
+			x_target, y_target, z_target,
+			Dir(),
+			DEFERRED_BUILD,
+			x, y, z,
+			block,
+			player,
+			num);
+	}
+}
+
+void Player::Craft(const ushort num) {
+	world->WriteLock();
+	Inventory * const inv=PlayerInventory();
+	if ( inv ) {
+		const int craft=inv->MiniCraft(num);
+		if ( 1==craft ) {
+			Notify("Nothing here.");
+		} else if ( 2==craft ) {
+			Notify("You don't know how to make \
+				something from this.");
+		} else {
+			Notify("Craft successful.");
+			emit Updated();
+		}
+	} else {
+		Notify("Cannot craft.");
+	}
+	world->Unlock();
+}
+
+void Player::TakeOff(const ushort num) {
+	world->WriteLock();
+	if ( ValidBlock(num) ) {
+		Inventory * const inv=PlayerInventory();
+		if ( inv->HasRoom() ) {
+			inv->Drop(num, inv);
+		} else {
+			emit Notify("No place to take off.");
+		}
+	}
+	world->Unlock();
+}
+
+void Player::ProcessCommand(QString & command) {
+	//don't forget lock and unlock world mutex where needed:
+	//world->WriteLock();
+	//or
+	//world->ReadLock();
+	//world->Unlock();
+	QTextStream comm_stream(&command);
+	QString request;
+	comm_stream >> request;
+	if ( "give"==request ) {
+		world->WriteLock();
+		Inventory * const inv=player->HasInventory();
+		if ( !creativeMode ) {
+			emit Notify(tr("You are not in Creative Mode."));
+		} else if ( !inv ) {
+			emit Notify(tr("No room."));
+		} else {
+			int kind, sub, num;
+			comm_stream >> kind >> sub >> num;
+			if ( !num ) {
+				num=1;
+			}
+			while ( num && inv->HasRoom() ) {
+				for (ushort i=9; i && num; --i) {
+					inv->Get(block_manager.
+						NewBlock(kind, sub));
+					--num;
+				}
+			}
+			if ( num > 0 ) {
+				emit Notify(QString(tr(
+					"No place for %1 things.")).arg(num));
+			}
+		}
+		world->Unlock();
+	} else if ( "move"==request ) {
+		int dir;
+		comm_stream >> dir;
+		Move(dir);
+	} else if ( "what"==request ) {
+		ushort x_what, y_what, z_what;
+		comm_stream >> x_what >> y_what >> z_what;
+		world->ReadLock();
+		if ( creativeMode ) {
+			Examine(x_what, y_what, z_what);
+		} else {
+			if (
+					qAbs(x-x_what) > 1 ||
+					qAbs(y-y_what) > 1 ||
+					qAbs(z-z_what) > 1)
+			{
+				emit Notify(tr("Too far."));
+			} else {
+				Examine(x_what, y_what, z_what);
+			}
+		}
+		world->Unlock();
+	} else if ( "heal"==request ) {
+		if ( !creativeMode ) {
+			emit Notify(tr("Not in Creative Mode."));
+			return;
+		}
+		if ( player ) {
+			world->WriteLock();
+			player->Restore();
+			world->Unlock();
+			emit Notify(tr("Healed."));
+		} else {
+			emit Notify(tr("Nothing to heal."));
+		}
+	} else if ( "moo"==request ) {
+		emit Notify("^__^");
+		emit Notify("(oo)\\_______");
+		emit Notify("(__)\\       )\\/\\");
+		emit Notify("    ||----w |");
+		emit Notify("    ||     ||");
+	} else {
+		emit Notify(QString(tr(
+			"Don't know such command: \"%1\".")).arg(command));
+	}
+}
+
+void Player::Get(Block * const block) {
+	if ( player ) {
+		Inventory * const inv=player->HasInventory();
+		if ( inv ) {
+			inv->Get(block);
+		}
+	}
+}
+
+bool Player::Visible(const ushort x_to, const ushort y_to, const ushort z_to)
+const {
 	return world->Visible(x, y, z, x_to, y_to, z_to);
 }
 
@@ -212,51 +533,143 @@ Block * Player::UsingBlock() const {
 }
 
 void Player::Dir(const int direction) {
-	if ( player )
+	if ( player ) {
 		player->SetDir(direction);
+	}
 	dir=direction;
-	
 }
 
 int Player::Dir() const { return dir; }
 
-void Player::Build(const ushort n) {
-	Block * temp=Drop(n);
-	ushort i, j, k;
-	Focus(i, j, k);
-	if ( !world->Build(temp, i, j, k) )
-		Get(temp);
+void Player::Damage(
+		const short x_target,
+		const short y_target,
+		const short z_target)
+const {
+	world->SetDeferredAction(
+			x_target, y_target, z_target,
+			0, //direction doesn't matter here
+			DEFERRED_DAMAGE,
+			x, y, z,
+			0, //what block - doesn't matter
+			0, //who
+			( creativeMode ?
+				MAX_DURABILITY : player->DamageLevel() ),
+			( creativeMode ? TIME : player->DamageKind() ));
 }
 
-void Player::Eat(const ushort n) {
-	if ( !player )
-		return;
+int Player::DamageKind() const {
+	return player ? player->DamageKind() : NO_HARM;
+}
 
-	Animal * const pl=player->IsAnimal();
-	if ( !pl )
-		return;
-
-	if ( inventory_size<=n ) {
-		emit Notify("What?");
-		return;
-	}
-
-	Block * food=Drop(n);
-	if ( !pl->Eat(food) ) {
-		Get(food);
-		emit Notify("You can't eat this.");
-	} else
-		emit Notify("Yum!");
-	if ( seconds_in_day*time_steps_in_sec < pl->Satiation() )
-		emit Notify("You have gorged yourself!");
+ushort Player::DamageLevel() const {
+	return player ? player->DamageLevel() : 0;
 }
 
 void Player::CheckOverstep(const int dir) {
 	UpdateXYZ();
-	if ( shred!=world->GetShred(x, y) ) {
-		shred=world->GetShred(x, y);
+	if (
+			x <  (world->NumShreds()/2-1)*SHRED_WIDTH ||
+			y <  (world->NumShreds()/2-1)*SHRED_WIDTH ||
+			x >= (world->NumShreds()/2+2)*SHRED_WIDTH ||
+			y >= (world->NumShreds()/2+2)*SHRED_WIDTH )
+	{
 		emit OverstepBorder(dir);
 		UpdateXYZ();
+	}
+}
+
+void Player::BlockDestroy() {
+	if ( cleaned ) {
+		return;
+	}
+	emit Notify("You died.");
+	player=0;
+	usingType=NO;
+	usingSelfType=NO;
+
+	emit Destroyed();
+	world->ReloadAllShreds(
+		homeLati,
+		homeLongi,
+		homeX,
+		homeY,
+		homeZ,
+		world->NumShreds());
+}
+
+void Player::WorldSizeReloadStart() {
+	if ( player ) {
+		disconnect(player, SIGNAL(Destroyed()), 0, 0);
+	}
+	homeX-=world->NumShreds()/2*SHRED_WIDTH;
+	homeY-=world->NumShreds()/2*SHRED_WIDTH;
+}
+
+void Player::WorldSizeReloadFinish() {
+	homeX+=world->NumShreds()/2*SHRED_WIDTH;
+	homeY+=world->NumShreds()/2*SHRED_WIDTH;
+}
+
+void Player::SetPlayer(
+		const ushort player_x,
+		const ushort player_y,
+		const ushort player_z)
+{
+	x=player_x;
+	y=player_y;
+	z=player_z;
+	if ( DWARF!=world->Kind(x, y, z) ) {
+		block_manager.DeleteBlock(world->GetBlock(x, y, z));
+		world->SetBlock( (player=block_manager.
+			NewBlock(DWARF, H_MEAT)->ActiveBlock()), x, y, z );
+	} else {
+		player=world->ActiveBlock(x, y, z);
+	}
+	Dir(world->GetBlock(x, y, z)->GetDir());
+
+	connect(player, SIGNAL(Destroyed()),
+		this, SLOT(BlockDestroy()),
+		Qt::DirectConnection);
+	connect(player, SIGNAL(Moved(int)),
+		this, SLOT(CheckOverstep(int)),
+		Qt::DirectConnection);
+	connect(player, SIGNAL(Updated()),
+		this, SIGNAL(Updated()),
+		Qt::DirectConnection);
+	connect(player, SIGNAL(ReceivedText(const QString &)),
+		this, SIGNAL(Notify(const QString &)),
+		Qt::DirectConnection);
+}
+
+void Player::SetNumShreds(ushort num) const {
+	const ushort num_shreds=world->NumShreds();
+	if ( num < 5 ) {
+		emit Notify(QString(
+			"Shreds number too small: %1x%2.").arg(num).arg(num));
+		emit Notify(QString("Shreds number is %1x%2.")
+			.arg(num_shreds).arg(num_shreds));
+	} else if ( 1 != num%2 ) {
+		emit Notify(QString(
+			"Invalid shreds number: %1x%2.").arg(num).arg(num));
+		emit Notify(QString("Shreds number is %1x%2.")
+			.arg(num_shreds).arg(num_shreds));
+	} else {
+		const short shift=num/2 - num_shreds/2;
+		world->ReloadAllShreds(
+			//put loaded zone center to where player is
+			world->Latitude()  + x/SHRED_WIDTH - num_shreds/2,
+			world->Longitude() + y/SHRED_WIDTH - num_shreds/2,
+			//new x and y correspond to player stanging
+			//in loaded zone center
+			x - (x/SHRED_WIDTH)*SHRED_WIDTH +
+				(num_shreds/2+shift)*SHRED_WIDTH,
+			y - (y/SHRED_WIDTH)*SHRED_WIDTH +
+				(num_shreds/2+shift)*SHRED_WIDTH,
+			z,
+			num);
+		emit Notify(QString("Shreds number is %1x%2.")
+			.arg(num).arg(num));
 	}
 }
 
@@ -266,68 +679,53 @@ Player::Player(World * const w) :
 		usingSelfType(NO),
 		cleaned(false)
 {
-	world->WriteLock();
+	QSettings sett(QDir::currentPath()+'/'+
+			world->WorldName()+"/settings.ini",
+		QSettings::IniFormat);
+	sett.beginGroup("player");
+	homeLongi=sett.value("home_longitude",
+		qlonglong(world->GetSpawnLongi())).toLongLong();
+	homeLati =sett.value("home_latitude",
+		qlonglong(world->GetSpawnLati())).toLongLong();
+	homeX=sett.value("home_x", 0).toInt();
+	homeY=sett.value("home_y", 0).toInt();
+	homeZ=sett.value("home_z", HEIGHT/2).toInt();
+	x    =sett.value("current_x", 0).toInt();
+	y    =sett.value("current_y", 0).toInt();
+	z    =sett.value("current_z", HEIGHT/2).toInt();
+	creativeMode=sett.value("creative_mode", false).toBool();
 
-	QFile file("player_save");
-	if ( !file.open(QIODevice::ReadOnly | QIODevice::Text) ) {
-		homeLongi=world->GetSpawnLongi();
-		homeLati= world->GetSpawnLati();
-		x=homeX=0;
-		y=homeY=0;
-		z=homeZ=height/2;
-	} else {
-		QTextStream in(&file);
-		QString temp, temp2;
-		in >> temp >> temp;
-		if ( temp!=world->WorldName(temp2) ) {
-			homeLongi=world->GetSpawnLongi();
-			homeLati= world->GetSpawnLati();
-			x=homeX=0;
-			y=homeY=0;
-			z=homeZ=height/2;
-		} else {
-			in >> temp >> homeLongi;
-			in >> temp >> homeLati;
-			in >> temp >> homeX;
-			in >> temp >> homeY;
-			in >> temp >> homeZ;
-			in >> temp >> x;
-			in >> temp >> y;
-			in >> temp >> z;
-		} 
-
-		file.close();
-	}
-
-	const ushort plus=world->NumShreds()/2*shred_width;
+	const ushort plus=world->NumShreds()/2*SHRED_WIDTH;
 	homeX+=plus;
 	homeY+=plus;
 	x+=plus;
 	y+=plus;
-	
-	shred=world->GetShred(x, y);
+	if ( creativeMode ) {
+		player=block_manager.NewBlock(PILE, DIFFERENT)->ActiveBlock();
+		dir=NORTH;
+	} else {
+		SetPlayer(x, y, z);
+		dir=player->GetDir();
+	}
 
-	if ( DWARF!=world->Kind(x, y, z) ) {
-		Block * const temp=world->GetBlock(x, y, z);
-		if ( !temp->Normal() )
-			delete temp;
-		player=new Dwarf(shred, x, y, z);
-		world->SetBlock(player, x, y, z);
-	} else
-		player=world->ActiveBlock(x, y, z);
-	dir=world->GetBlock(x, y, z)->GetDir();
-
-	connect(player, SIGNAL(Moved(int)),
-		this, SLOT(CheckOverstep(int)),
-		Qt::DirectConnection);
-	connect(player, SIGNAL(Destroyed()),
-		this, SLOT(BlockDestroy()),
+	connect(world, SIGNAL(NeedPlayer(
+			const ushort,
+			const ushort,
+			const ushort)),
+		this, SLOT(SetPlayer(
+			const ushort,
+			const ushort,
+			const ushort)),
 		Qt::DirectConnection);
 	connect(this, SIGNAL(OverstepBorder(int)),
 		world, SLOT(ReloadShreds(int)),
 		Qt::DirectConnection);
-
-	world->Unlock();
+	connect(world, SIGNAL(StartReloadAll()),
+		this, SLOT(WorldSizeReloadStart()),
+		Qt::DirectConnection);
+	connect(world, SIGNAL(FinishReloadAll()),
+		this, SLOT(WorldSizeReloadFinish()),
+		Qt::DirectConnection);
 }
 
 void Player::CleanAll() {
@@ -338,28 +736,26 @@ void Player::CleanAll() {
 	}
 	cleaned=true;
 
-	QString str;
-	QFile file("player_save");
-	if ( !file.open(QIODevice::WriteOnly | QIODevice::Text) ) {
-		QTextStream errors(stderr);
-		errors << "Player::Cleanall(): Savefile write error: "
-			<< str << endl;
-		world->Unlock();
-		return;
+	if ( creativeMode ) {
+		block_manager.DeleteBlock(player);
 	}
-	
-	const ushort min=world->NumShreds()/2*shred_width;
-	QTextStream out(&file);
-	out << "World:\n" << world->WorldName(str) << endl
-		<< "Home_longitude:\n" << homeLongi << endl
-		<< "Home_latitude:\n" << homeLati << endl
-		<< "Home_x:\n" << homeX-min << endl
-		<< "Home_y:\n" << homeY-min << endl
-		<< "Home_z:\n" << homeZ << endl
-		<< "Current_x:\n" << x-min << endl
-		<< "Current_y:\n" << y-min << endl
-		<< "Current_z:\n" << z << endl;
-	file.close();
+
+	QSettings sett(QDir::currentPath()+'/'+
+			world->WorldName()+"/settings.ini",
+		QSettings::IniFormat);
+	sett.beginGroup("player");
+	sett.setValue("home_longitude", qlonglong(homeLongi));
+	sett.setValue("home_latitude", qlonglong(homeLati));
+	const ushort min=world->NumShreds()/2*SHRED_WIDTH;
+	sett.setValue("home_x", homeX-min);
+	sett.setValue("home_y", homeY-min);
+	sett.setValue("home_z", homeZ);
+	sett.setValue("current_x", x-min);
+	sett.setValue("current_y", y-min);
+	sett.setValue("current_z", z);
+	sett.setValue("creative_mode", creativeMode);
 
 	world->Unlock();
 }
+
+Player::~Player() { CleanAll(); }

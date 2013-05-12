@@ -15,64 +15,93 @@
 	*along with FREG. If not, see <http://www.gnu.org/licenses/>.
 	*/
 
-//this file provides stub screen for freg (only text, only notifications)
+//this file provides curses (text-based graphics interface) screen for freg.
+//screen.cpp provides definitions for methods.
 
 #ifndef SCREEN_H
 #define SCREEN_H
 
 #define NOX
-#define SCREEN_SIZE 30
 
 #include "VirtScreen.h"
-#include "i_thread.h"
-#include <cstdio>
+
+enum actions {
+	USE,
+	THROW,
+	OBTAIN, 
+	WIELD,
+	INSCRIBE,
+	EAT,
+	BUILD,
+	CRAFT,
+	TAKEOFF,
+};
+
+class IThread;
 
 class Screen : public VirtScreen {
 	Q_OBJECT
 
 	IThread * input;
 	bool cleaned;
-
 	FILE * notifyLog; //весь текст уведомлений (notification) дублируется в файл.
+	int actionMode;
+	
+	char CharName(
+			const ushort,
+			const ushort,
+			const ushort) const;
+	char CharName(const int, const int) const;
 
 	private slots:
 	void Print() {}
 
 	public slots:
-	void Notify(const QString & str) {
-		puts(str.toLocal8Bit().constData());
-	}
-	void CleanAll() {
-		Notify("Exiting...");
-	}
-	void PassString(QString & str) const {
-		char input[144];
-		fgets(input, 144, stdin);
-		str=input;
-	}
+	void Notify(const QString &);
+	void CleanAll();
+	void PassString(QString &) const;
 	void Update(
 			const ushort,
 			const ushort,
-			const ushort) {}
-	void UpdateAll() {
-		Notify("World updated.");
-	}
+			const ushort)
+	{}
+	void UpdateAll() {}
 	void UpdatePlayer() {}
 	void UpdateAround(
 			const ushort,
 			const ushort,
 			const ushort,
-			const ushort) {}
-	void RePrint() { //стереть всё с экрана и перерисовать всё с нуля (можно сделать пустой)
-		Notify("Reprint: stub");
-	}
-
-	signals:
-	void ExitReceived();
-	void InputReceived(const int, const int) const;
+			const ushort)
+	{}
+	void Move(const int) {}
 
 	public:
+	void ControlPlayer(const int);
 	Screen(World * const, Player * const);
+};
+
+/** \class IThread screen.h
+ * \brief Keyboard input thread for curses screen for freg.
+ *
+ * This class is thread, with IThread::run containing input loop.
+ */
+
+#include <QThread>
+
+class IThread : public QThread {
+	Q_OBJECT
+
+	Screen * const screen;
+
+	public:
+		IThread(Screen * const);
+		void Stop();
+
+	protected:
+		void run();
+	
+	private:
+		volatile bool stopped;
 };
 
 #endif

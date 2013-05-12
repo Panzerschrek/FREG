@@ -16,8 +16,7 @@
 	*/
 
 //this file provides curses (text-based graphics interface) screen for freg.
-//screen.cpp provides definitions for methods,
-//i_thread.h and i_thred.cpp provide input thread for this screen.
+//screen.cpp provides definitions for methods.
 
 #ifndef SCREEN_H
 #define SCREEN_H
@@ -25,9 +24,20 @@
 #define NOX
 #define SCREEN_SIZE 30
 
-#include "VirtScreen.h"
 #include <curses.h>
+#include "VirtScreen.h"
 
+enum actions {
+	USE,
+	THROW,
+	OBTAIN,
+	WIELD,
+	INSCRIBE,
+	EAT,
+	BUILD,
+	CRAFT,
+	TAKEOFF
+}; //enum actions
 enum color_pairs { //do not change colors order! //foreground_background
         BLACK_BLACK=1,
         BLACK_RED,
@@ -100,10 +110,9 @@ enum color_pairs { //do not change colors order! //foreground_background
         WHITE_MAGENTA,
         WHITE_CYAN,
         WHITE_WHITE
-};
+}; //enum color_pairs
 
 class IThread;
-class Block;
 class Inventory;
 class QTimer;
 
@@ -117,45 +126,32 @@ class Screen : public VirtScreen {
 	IThread * input;
 	volatile bool updated;
 	bool cleaned;
-
 	QTimer * timer;
+	FILE * notifyLog;
+	int actionMode;
+	short shiftFocus;
 
-	char CharName(
-			const ushort,
-			const ushort,
-			const ushort) const;
-	char CharName(const int, const int) const;
-	char CharNumber(
-			const ushort,
-			const ushort,
-			const ushort) const;
-	char CharNumberFront(
-			const ushort,
-			const ushort) const;
+	QString command; //save previous command for further execution
+
+	char CharName(int, int) const;
+	char CharNumber(ushort x, ushort y, ushort z) const;
+	char CharNumberFront(ushort x, ushort y) const;
 	void Arrows(
 			WINDOW * const & window,
-			const ushort x,
-			const ushort y) const
-	{
-		wcolor_set(window, WHITE_RED, NULL);
-		mvwprintw(window, 0, x, "vv");
-		mvwprintw(window, SCREEN_SIZE+1, x, "^^");
-		mvwprintw(window, y, 0, ">");
-		mvwprintw(window, y, SCREEN_SIZE*2+1, "<");	
-	}
-	FILE * notifyLog; //весь текст уведомлений (notification) дублируется в файл.
+			ushort x, ushort y) const;
+	void HorizontalArrows(
+			WINDOW * const & window,
+			ushort y,
+			short color=WHITE_RED) const;
+	void ActionXyz(ushort & x, ushort & y, ushort & z) const;
 
-	void PrintNormal(WINDOW * const) const;
-	void PrintFront(WINDOW * const) const;
-	void PrintInv(WINDOW * const, Inventory * const) const;
+	void PrintNormal(WINDOW *) const;
+	void PrintFront(WINDOW *) const;
+	void PrintInv(WINDOW *, Inventory *) const;
+	void RePrint();
 
-	color_pairs Color(
-			const int kind,
-			const int sub) const; //пара цветов текст_фон в зависимоти от типа (kind) и вещества (sub) блока.
-	color_pairs Color(
-			const ushort,
-			const ushort,
-			const ushort) const;
+	color_pairs Color(int kind, int sub) const;
+	void PrintBlock(ushort x, ushort y, ushort z, WINDOW *) const;
 
 	private slots:
 	void Print();
@@ -163,36 +159,42 @@ class Screen : public VirtScreen {
 	public slots:
 	void Notify(const QString &);
 	void CleanAll();
-	void PassString(QString &) const;
-	void Update(
-			const ushort,
-			const ushort,
-			const ushort)
-	{
-		updated=false;
-	}
-	void UpdateAll() { updated=false; };
-	void UpdatePlayer() { updated=false; };
-	void UpdateAround(
-			const ushort,
-			const ushort,
-			const ushort,
-			const ushort)
-	{
-		updated=false;
-	}
-	void Move(const int) { updated=false; }
-	void RePrint() {
-		clear();
-		updated=false;
-	}
-
-	signals:
-	void ExitReceived();
-	void InputReceived(int, int) const;
+	QString & PassString(QString &) const;
+	void Update(ushort, ushort, ushort);
+	void UpdateAll();
+	void UpdatePlayer();
+	void UpdateAround(ushort, ushort, ushort, ushort);
+	void Move(int);
+	void DeathScreen();
 
 	public:
-	Screen(World * const, Player * const);
-};
+	void ControlPlayer(int);
+	Screen(World *, Player *);
+	~Screen();
+}; //class screen
+
+/** \class IThread screen.h
+ * \brief Keyboard input thread for curses screen for freg.
+ *
+ * This class is thread, with IThread::run containing input loop.
+ */
+
+#include <QThread>
+
+class IThread : public QThread {
+	Q_OBJECT
+
+	Screen * const screen;
+
+	public:
+	IThread(Screen * const);
+	void Stop();
+
+	protected:
+	void run();
+
+	private:
+	volatile bool stopped;
+}; //class IThread
 
 #endif

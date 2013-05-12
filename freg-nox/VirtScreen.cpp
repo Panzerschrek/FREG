@@ -42,19 +42,23 @@ void VirtScreen::ConnectWorld() {
 		Qt::DirectConnection);
 }
 
-VirtScreen::VirtScreen(
-		World * const world_,
-		Player * const player_)
-		:
+void VirtScreen::UpdatesEnd() {}
+
+void VirtScreen::DeathScreen() {}
+
+VirtScreen::VirtScreen(World * const world_, Player * const player_) :
 		w(world_),
 		player(player_)
 {
-	connect(w, SIGNAL(Notify(QString)),
-		this, SLOT(Notify(QString)));
-	connect(player, SIGNAL(Notify(QString)),
-		this, SLOT(Notify(QString)));
+	connect(w, SIGNAL(Notify(const QString &)),
+		this, SLOT(Notify(const QString &)));
+	connect(player, SIGNAL(Notify(const QString &)),
+		this, SLOT(Notify(const QString &)));
 
 	connect(w, SIGNAL(GetString(QString &)),
+		this, SLOT(PassString(QString &)),
+		Qt::DirectConnection);
+	connect(player, SIGNAL(GetString(QString &)),
 		this, SLOT(PassString(QString &)),
 		Qt::DirectConnection);
 
@@ -75,3 +79,7 @@ VirtScreen::VirtScreen(
 		this, SLOT(UpdatesEnd()),
 		Qt::DirectConnection);
 }
+
+void VirtScreen::CleanAll() {}
+
+VirtScreen::~VirtScreen() { CleanAll(); }

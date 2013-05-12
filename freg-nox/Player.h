@@ -32,10 +32,13 @@
  * Also it does checks for player walking over the shred border.
  */
 
-#include <header.h>
-#include <QString>
+#ifndef PLAYER_H
+#define PLAYER_H
+
+#include "header.h"
 #include <QObject>
 
+class QString;
 class World;
 class Block;
 class Active;
@@ -47,25 +50,25 @@ class Player : public QObject {
 	Q_OBJECT
 
 	ulong homeLongi, homeLati;
-	ushort homeX, homeY, homeZ;
-	ushort x, y, z; //current position
+	short homeX, homeY, homeZ;
+	short x, y, z; //current position
 	int dir;
 	World * const world;
 	Active * player;
-	//Block * usingBlock;
 	int usingType;
 	int usingSelfType;
-	Shred * shred;
+
+	bool creativeMode;
 
 	volatile bool cleaned;
 
 	void UpdateXYZ();
+	Shred * GetShred() const;
 
 	public slots:
 
 	/// For cleaning player-related data before exiting program.
-	/**
-	 * This is connected to app's aboutToQuit() signal, also it
+	/**This is connected to app's aboutToQuit() signal, also it
 	 * is called from destructor. There is a check for data deleting
 	 * not to be called twice.
 	 * Also this saves player to file player_save.
@@ -73,51 +76,44 @@ class Player : public QObject {
 	void CleanAll();
 
 	/// Checks if player walked over the shred border.
-	/**
-	 * This is connected to player's block signal Moved(int).
+	/**This is connected to player's block signal Moved(int).
 	 * It emits OverstepBorder(int) signal when player walks
 	 * over the shred border.
 	 */
-	void CheckOverstep(const int);
+	void CheckOverstep(int);
 
-	///Calls player actions, such as moving, turning, etc.
-	/**
-	 * This is an interface for player actions, which are private.
-	 * It should be connected to screen::InputReceived(int, int)
-	 * signal and receive input.
-	 */
-	void Act(const int, const int);
 	///This is called when player block is destroyed.
-	void BlockDestroy() { player=0; }
-	
+	void BlockDestroy();
+
+	void WorldSizeReloadStart();
+	void WorldSizeReloadFinish();
+
+	void SetPlayer(ushort set_x, ushort set_y, ushort set_z);
+
 	signals:
 	///This is emitted when a notification is needed to be displayed.
-	/**
-	 * It should be connected to screen::Notify(const QString &).
-	 */
+	/** It should be connected to screen::Notify(const QString &). */
 	void Notify(const QString &) const;
 
 	///This is emitted when player walks over shred border.
-	/**
-	 * It should be connected to World::ReloadShreds(int) signal.
-	 */
-	void OverstepBorder(const int);
+	/** It should be connected to World::ReloadShreds(int) signal. */
+	void OverstepBorder(int);
 
 	///This is emitted when some player property is updated.
-	/**
-	 * It shoul be connected to screen::UpdatePlayer() signal.
-	 */
+	/** It shoul be connected to screen::UpdatePlayer() signal. */
 	void Updated();
+	void GetString(QString &);
+	void Destroyed();
 
 	public:
-	///This returns current player block X position (coordinates in loaded zone)
-	ushort X() const { return x; }
+	///This returns current player block X (coordinates in loaded zone)
+	ushort X() const;
 
-	///This returns current player block Y position (coordinates in loaded zone)
-	ushort Y() const { return y; }
+	///This returns current player block Y (coordinates in loaded zone)
+	ushort Y() const;
 
-	///This returns current player block Z position (coordinates in loaded zone)
-	ushort Z() const { return z; }
+	///This returns current player block Z (coordinates in loaded zone)
+	ushort Z() const;
 
 	///This returns current player direction (see enum dirs in header.h)
 	int Dir() const;
@@ -131,63 +127,81 @@ class Player : public QObject {
 	short Satiation() const;
 
 	///This returns player block itself.
-	Active * GetP() const { return player; }
+	Active * GetP() const;
 
 	///This returns true if block at (x, y, z) is visible to player.
-	bool Visible(
-		const ushort x, 
-		const ushort y,
-		const ushort z) const;
+	bool Visible(ushort x, ushort y, ushort z) const;
+	void Focus(ushort & x, ushort & y, ushort & z) const;
 
 	///This returns block which is now used by player.
-	/*
-	 * See enum usage_types in header.h.
-	 */
+	/** See enum usage_types in header.h. */
 	Block * UsingBlock() const;
 
 	///This returns how player is using something now.
-	/*
-	 * See enum usage_types in header.h.
-	 */
-	int UsingType() const { return usingType; }
-	
+	/** See enum usage_types in header.h. */
+	int UsingType() const;
+
 	//This returns how player is using himself.
-	/*
-	 * For example, OPEN means he is looking in his backpack.
-	 */
-	int UsingSelfType() const { return usingSelfType; }
+	/** For example, OPEN means he is looking in his backpack. */
+	int UsingSelfType() const;
 
 	Inventory * PlayerInventory();
 
-	void Examine() const;
-	int Move(const int dir);
+	long GetLongitude() const;
+	long GetLatitude() const;
+
+	bool GetCreativeMode() const;
+	void SetCreativeMode(bool turn);
+
+	void Turn(int dir);
+	void Move(int dir);
 	void Jump();
-	void Inscribe();
-	void Build(const ushort);
-	void Eat(const ushort);
-	void Obtain(const ushort) {}
-	void Throw(const ushort) {}
-	void Wield(const ushort) {}
-	void Wield() {}
-	void TakeOff(const ushort) {}
+
+	///Tries to switch usingSelfType from NO to OPEN.
+	void Backpack();
+	void Inscribe(short x, short y, short z) const;
+	void Examine(short x, short y, short z) const;
+	void Damage(short x, short y, short z) const;
+	void Use(short x, short y, short z);
+
+	///Tries to use block number num in inventory.
+	void Use     (ushort num);
+	///Tries to throw (drop out) block number num from inventory.
+	void Throw   (ushort num);
+	///Tries to get block number num from outer inventory.
+	void Obtain  (ushort num);
+	///Returns true if wielding successful.
+	bool Wield   (ushort num);
+	void Inscribe(ushort num);
+	void Eat     (ushort num);
+	void Craft   (ushort num);
+	void TakeOff (ushort num);
+	void Build(short x, short y, short z, ushort num);
+	///Can also wield appropriate things. True if successful.
+	bool MoveInsideInventory(ushort num_from, ushort num_to);
+	void ProcessCommand(QString & command);
+
 	private:
+	bool InnerMove(ushort num_from, ushort num_to);
+	Block * ValidBlock(ushort num) const;
+	int DamageKind() const;
+	ushort DamageLevel() const;
 	void Get(Block *);
-	Block * Drop(const ushort);
-	void Focus(
-		ushort &,
-		ushort &,
-		ushort &) const;
-	void Dir(const int dir);
+	Block * Drop(ushort);
+	void Dir(int dir);
 
 	public:
+	void SetNumShreds(ushort num) const;
+
 	///Constructor creates or loads player.
-	/**
-	 * It reads player_save file if it exists,
+	/**It reads player_save file if it exists,
 	 * puts player block to the world if there is no player block,
 	 * and makes necessary connections.
 	 */
 	Player(World * const);
-	
+
 	///Destructor calls Player::CleanAll().
-	~Player() { CleanAll(); }
-};
+	~Player();
+}; //Player
+
+#endif

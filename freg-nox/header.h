@@ -23,139 +23,134 @@
 
 #ifdef Q_OS_WIN32
 	#include <windows.h>
-	#define usleep(n) { Sleep(n/1000); }
+	//#define usleep(n) { Sleep(n/1000); }
 #else
 	#include <unistd.h>
 #endif
 
-const unsigned short shred_width=16;
-const unsigned short height=100;
+const ushort SHRED_WIDTH=16;
+const ushort HEIGHT=128;
 
-const unsigned short note_length=144;
+const unsigned short SECONDS_IN_HOUR=60;
+const unsigned short SECONDS_IN_DAY=24*SECONDS_IN_HOUR;
+const unsigned short END_OF_NIGHT  = 6*SECONDS_IN_HOUR;
+const unsigned short END_OF_MORNING=12*SECONDS_IN_HOUR;
+const unsigned short END_OF_NOON   =18*SECONDS_IN_HOUR;
+const unsigned short END_OF_EVENING= 0*SECONDS_IN_HOUR;
+const unsigned short SECONDS_IN_NIGHT=END_OF_NIGHT;
+const unsigned short SECONDS_IN_DAYLIGHT=SECONDS_IN_DAY-END_OF_NIGHT;
 
-const unsigned short inventory_size=26;
+const unsigned char MAX_LIGHT_RADIUS=15;
 
-//num_str in Screen::PrintInv must be big enough
-const unsigned short max_stack_size=9;
-
-const unsigned short time_steps_in_sec=10;
-const unsigned short seconds_in_hour=60;
-const unsigned short seconds_in_day=24*seconds_in_hour;
-const unsigned short end_of_night  = 6*seconds_in_hour;
-const unsigned short end_of_morning=12*seconds_in_hour;
-const unsigned short end_of_noon   =18*seconds_in_hour;
-const unsigned short end_of_evening= 0*seconds_in_hour;
-const unsigned short seconds_in_night=end_of_night;
-const unsigned short seconds_in_daylight=seconds_in_day-end_of_night;
-
-const unsigned char max_light_radius=10;
-
-const unsigned short max_durability=100;
-const unsigned short max_breath=60;
+const unsigned short MAX_DURABILITY=100;
+const unsigned short MAX_BREATH=60;
 
 enum dirs {
-	HERE,
-	NORTH,
-	NORTH_EAST,
-	EAST,
-	SOUTH_EAST,
-	SOUTH,
-	SOUTH_WEST,
-	WEST,
-	NORTH_WEST,
-	UP,
-	DOWN
-};
+	UP, ///< 0
+	DOWN, ///< 1
+	NORTH, ///< 2
+	SOUTH, ///< 3
+	EAST, ///< 4
+	WEST, ///< 5
+	NORTH_EAST, ///< 6
+	SOUTH_EAST, ///< 7
+	SOUTH_WEST, ///< 8
+	NORTH_WEST, ///< 9
+	HERE ///< 10
+}; //enum dirs
 
 enum { NOT_MOVABLE, MOVABLE, ENVIRONMENT };
 
 enum times_of_day { MORNING, NOON, EVENING, NIGHT };
 
 enum damage_kinds {
-	MINE,
-	DIG,
-	CUT,
-	THRUST,
-	CRUSH,
-	HEAT,
-	FREEZE,
-	MELT,
-	ELECTRO,
-	HUNGER,
-	BREATH,
-	EATEN
-};
+	MINE,    ///< 0
+	DIG,     ///< 1
+	CUT,     ///< 2
+	THRUST,  ///< 3
+	CRUSH,   ///< 4
+	HEAT,    ///< 5
+	FREEZE,  ///< 6
+	MELT,    ///< 7
+	ELECTRO, ///< 8
+	HUNGER,  ///< 9
+	BREATH,  ///< 10
+	EATEN,   ///< 11
+	TIME,    ///< 12
+	NO_HARM, ///< 13
+	DAMAGE_FALL ///< 14
+}; //enum damage_kinds
 
 enum kinds {//kind of atom
-	BLOCK,
-	BELL,
-	CHEST,
-	PILE,
-	DWARF,
-	ANIMAL,
-	PICK,
-	TELEGRAPH,
-	LIQUID,
-	GRASS,
-	BUSH,
-	RABBIT,
-	ACTIVE
-};
+	//do not change order, or rewrite craft recipes.
+	//add new kinds to bottom.
+	BLOCK, ///<0
+	BELL, ///<1
+	CHEST, ///<2
+	PILE, ///<3
+	DWARF, ///<4
+	ANIMAL, ///<5
+	PICK, ///<6
+	TELEGRAPH, ///<7
+	LIQUID, ///<8
+	GRASS, ///<9
+	BUSH, ///<10
+	RABBIT, ///<11
+	ACTIVE, ///<12
+	CLOCK, ///<13
+	PLATE, ///<14
+	WORKBENCH, ///<15
+	WEAPON, ///<16
+	LADDER, ///<17
+	DOOR, ///< 18
+	LOCKED_DOOR ///< 19
+}; //enum kinds
 enum subs {//substance block is made from
-	STONE, //keep it first in this list
-	MOSS_STONE,
-	NULLSTONE,
-	SKY,
-	STAR,
-	SUN_MOON,
-	SOIL,
-	H_MEAT, //hominid meat
-	A_MEAT, //animal meat
-	GLASS,
-	WOOD,
-	DIFFERENT,
-	IRON,
-	WATER,
-	GREENERY,
-	SAND,
-	HAZELNUT,
-	ROSE,
+	//do not change order, or rewrite craft recipes.
+	//add new substances right before air.
+	STONE,      ///<0
+	MOSS_STONE, ///<1
+	NULLSTONE,  ///<2
+	SKY,        ///<3
+	STAR,       ///<4
+	SUN_MOON,   ///<5
+	SOIL,       ///<6
+	H_MEAT,     ///<7 (hominid meat)
+	A_MEAT,     ///<8 (animal meat)
+	GLASS,      ///<9
+	WOOD,       ///<10
+	DIFFERENT,  ///<11
+	IRON,       ///<12
+	WATER,      ///<13
+	GREENERY,   ///<14
+	SAND,       ///<15
+	HAZELNUT,   ///<16
+	ROSE,       ///<17
 	AIR //keep it last in this list
-};
-
-enum before_move_return { NOTHING, DESTROY };
+}; //enum subs
 
 enum usage_types { NO, OPEN, INNER_ACTION };
 
-enum props {
-	KIND,
-	SUB,
-	DURABILITY,
-	TRANSPARENCY,
-	MOVABILITY
-};
+enum transparency {
+	BLOCK_OPAQUE,
+	BLOCK_TRANSPARENT,
+	INVISIBLE,
+	NONSTANDARD=6,
+	UNDEF
+}; //enum transparency
 
-enum actions {
-	MOVE,
-	TURN_RIGHT,
-	TURN_LEFT,
-	TURN,
-	JUMP,
-	OPEN_INVENTORY,
-	USE,
-	EXAMINE,
-	DROP,
-	GET,
-	WIELD,
-	INSCRIBE,
-	EAT,
-	DAMAGE,
-	BUILD,
-	CRAFT,
-	TAKEOFF
-};
+const unsigned short SEA_LEVEL= 58;
+const unsigned short SEABED_LEVEL= 48;
+const unsigned short PLANE_LEVEL= 64;
+const unsigned short MOUNTAIN_LEVEL= 88;
 
-//for debugging reasons:
-#define eprint(n) { fputs(n"\n", stderr); }
+const float SEABED_AMPLITUDE= 12.0f;
+const float PLANE_AMPLITUDE= 8.0f;
+const float MOUNTAIN_AMPLITUDE= 50.0f;
+
+//[ level - amplitude; level + amplitude ]
+//faster- [ level - amplitude/2; level + amplitude/2 ]
+//perlin [ -1; 1]
+//h= level + amplitude * perlin
 
 #endif

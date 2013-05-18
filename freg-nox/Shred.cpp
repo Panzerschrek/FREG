@@ -687,6 +687,7 @@ void Shred::TestShred() {
 		}
 	}
 	SetNewBlock(RABBIT, A_MEAT, 2, 8, level);
+	AddWater();
 }
 
 void Shred::NullMountain() {
@@ -779,7 +780,6 @@ void Shred::Pyramid() {
 	//pyramid by Panzerschrek
 	//'p' - pyramid symbol
 	ushort level=FlatUndeground();
-	AddWater();
 	if ( level > 127-16 ) {
 		level=127-16;
 	}
@@ -812,15 +812,18 @@ void Shred::Pyramid() {
 	for (z=HEIGHT/2-52; z<=level; z++) {
 		blocks[SHRED_WIDTH/2][SHRED_WIDTH/2][z]=Normal(AIR);
 	}
+	AddWater();
 }
 
 void Shred::Hill() {
 	NormalUnderground(0);
+	AddWater();
 	PlantGrass();
 }
 
 void Shred::Mountain() {
 	NormalUnderground(0);
+	AddWater();
 	PlantGrass();
 }
 

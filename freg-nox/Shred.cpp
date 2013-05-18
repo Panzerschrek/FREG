@@ -23,7 +23,25 @@
 #include "world.h"
 #include "BlockManager.h"
 
-//Qt version in Debian stable now.
+const ushort SEA_LEVEL    = 58;
+const ushort SEABED_LEVEL = 48;
+const ushort PLANE_LEVEL  = 64;
+const ushort HILL_LEVEL   = 76;
+const ushort MOUNTAIN_LEVEL=88;
+
+const float SEABED_AMPLITUDE = 12.0f;
+const float PLANE_AMPLITUDE  =  8.0f;
+const float HILL_AMPLITUDE   = 29.0f;
+const float MOUNTAIN_AMPLITUDE=50.0f;
+
+/*landscape generation:
+ * [ level - amplitude; level + amplitude ]
+ * faster- [ level - amplitude/2; level + amplitude/2 ]
+ * perlin [ -1; 1]
+ * h= level + amplitude * perlin
+*/
+
+//Qt version in Debian stable that time.
 const int datastream_version=QDataStream::Qt_4_6;
 
 float Noise2(const int x, const int y) { //range - [-1;1]
@@ -91,6 +109,10 @@ const {
 		case '^':
 			*l = MOUNTAIN_LEVEL;
 			*a = MOUNTAIN_AMPLITUDE;
+		break;
+		case '+':
+			*l = HILL_LEVEL;
+			*a = HILL_AMPLITUDE;
 		break;
 	}
 }
@@ -198,6 +220,7 @@ Shred::Shred(
 		case '.': Plain();        break;
 		case 't': TestShred();    break;
 		case 'p': Pyramid();      break;
+		case '+': Hill();         break;
 		case '^': Mountain();     break;
 		case ':': Desert();       break;
 		case '%': Forest(longi, lati); break;
@@ -250,6 +273,7 @@ void Shred::SetNewBlock(
 		const int kind, const int sub,
 		const ushort x, const ushort y, const ushort z)
 {
+	block_manager.DeleteBlock(blocks[x][y][z]);
 	SetBlock( block_manager.NewBlock(kind, sub), x, y, z );
 }
 
@@ -436,16 +460,25 @@ char Shred::TypeOfShred(const long longi, const long lati) const {
 
 void Shred::AddWater() {
 	short i, j, k;
-	char shred_types[5];
+	char shred_types[9];
 	shred_types[0] = TypeOfShred(longitude, latitude);
 	shred_types[1] = TypeOfShred(longitude + 1, latitude);
 	shred_types[2] = TypeOfShred(longitude - 1, latitude);
 	shred_types[3] = TypeOfShred(longitude, latitude + 1);
 	shred_types[4] = TypeOfShred(longitude, latitude - 1);
+	
+	shred_types[5] = TypeOfShred(longitude + 1, latitude + 1);
+	shred_types[6] = TypeOfShred(longitude + 1, latitude - 1);
+	shred_types[7] = TypeOfShred(longitude - 1, latitude + 1);
+	shred_types[8] = TypeOfShred(longitude - 1, latitude - 1);
 	if (
 			shred_types[0] == '~' || shred_types[1] == '~' ||
 			shred_types[2] == '~' || shred_types[3] == '~' ||
-			shred_types[4] == '~') {
+			shred_types[4] == '~' || shred_types[5] == '~' ||
+			shred_types[6] == '~' || shred_types[7] == '~' ||
+			shred_types[8] == '~')
+						{
+	
 		for (i = 0; i < SHRED_WIDTH; i++)
 		for (j = 0; j < SHRED_WIDTH; j++)
 		for (k = SEA_LEVEL; true; k--) {
@@ -564,9 +597,9 @@ void Shred::NormalUnderground(const ushort depth, const int sub) {
 			   FinalNoise(latitude * 16 + i,
 				      longitude * 16 +
 				      j) * interp_amplitude) - depth;
-		if( h >= HEIGHT - 1 )
+		if( h >= HEIGHT - 1 ) {
             		h= HEIGHT - 2;
-		} else if (h < 2) {
+		} else if ( h < 2 ) {
 			h = 2;
 		}
 		if (h < 80) {
@@ -624,12 +657,9 @@ void Shred::TestShred() {
 	//row 2
 	SetNewBlock(LADDER, NULLSTONE, 1, 3, level);
 	//tall ladder
-	SetNewBlock(LADDER, WOOD, 1, 3, level + 1);
-	SetNewBlock(LADDER, WOOD, 1, 3, level + 2);
-	SetNewBlock(LADDER, WOOD, 1, 3, level + 3);
-	SetNewBlock(LADDER, WOOD, 1, 3, level + 4);
-	SetNewBlock(LADDER, WOOD, 1, 3, level + 5);
-	
+	for (ushort i=level+1; i<=level+5 && i<HEIGHT-1; ++i) {
+		SetNewBlock(LADDER, WOOD, 1, 3, i);
+	}
 	SetNewBlock(DWARF, H_MEAT, 3, 3, level);
 	SetNewBlock(LIQUID, WATER, 5, 3, level - 3);
 	SetNewBlock(LIQUID, WATER, 5, 3, level - 3);
@@ -781,6 +811,11 @@ void Shred::Pyramid() {
 	for (z=HEIGHT/2-52; z<=level; z++) {
 		blocks[SHRED_WIDTH/2][SHRED_WIDTH/2][z]=Normal(AIR);
 	}
+}
+
+void Shred::Hill() {
+	NormalUnderground(0);
+	PlantGrass();
 }
 
 void Shred::Mountain() {

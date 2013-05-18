@@ -973,10 +973,9 @@
 		if  ( !block ) {
 			return true;
 		} else if ( num_to > onLegs ||
+				inRight==num_to || inLeft==num_to ||
 				( onHead==num_to &&
 					WEARABLE_HEAD==block->Wearable() ) ||
-				( (inRight==num_to || inLeft==num_to) &&
-					WEARABLE_ARM==block->Wearable() ) ||
 				( onBody==num_to &&
 					WEARABLE_BODY==block->Wearable() ) ||
 				( onLegs==num_to &&

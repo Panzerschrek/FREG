@@ -803,7 +803,7 @@ int World::Build(
 		const ushort i, const ushort j, const ushort k,
 		const quint8 dir, Block * const who) //defaults exist
 {
-	if ( !InBounds(i, j, k) || AIR!=Sub(i, j, k)  ) {
+	if ( !InBounds(i, j, k) || ENVIRONMENT!=Movable(i, j, k)  ) {
 		if ( who ) {
 			who->ReceiveSignal(tr("Cannot build here."));
 		}

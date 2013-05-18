@@ -779,6 +779,7 @@ void Shred::Pyramid() {
 	//pyramid by Panzerschrek
 	//'p' - pyramid symbol
 	ushort level=FlatUndeground();
+	AddWater();
 	if ( level > 127-16 ) {
 		level=127-16;
 	}
